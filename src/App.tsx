@@ -88,7 +88,7 @@ function App(): React.JSX.Element {
           <Text style={styles.sectionHeader}>{title}</Text>
         )}
         onEndReached={loadMoreCharacters}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={2}
         contentContainerStyle={styles.scrollView}
       />
     </SafeAreaView>
@@ -116,6 +116,9 @@ const styles = StyleSheet.create({
   nameText: {
     color: '#FFFFFF',
     flex: 1,
+    fontFamily: 'Barlow-Regular',
+    fontSize: 16,
+    marginLeft: 10,
   },
   thumbnail: {
     width: 50,

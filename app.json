@@ -1,4 +1,8 @@
 {
   "name": "marvel",
-  "displayName": "marvel"
+  "displayName": "marvel",
+  "splash": {
+    "image": "./assets/Splash.png",
+    "backgroundColor": "#B50F16"
+  }
 }
