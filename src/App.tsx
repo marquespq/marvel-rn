@@ -36,18 +36,22 @@ function App(): React.JSX.Element {
             ),
         );
 
-        const sections: CharacterSection[] = [];
+        const updatedSections = [...characterSections];
+
         filteredCharacters.forEach((character: Character) => {
           const firstLetter = character.name.charAt(0).toUpperCase();
-          const section = sections.find(sec => sec.title === firstLetter);
-          if (section) {
-            section.data.push(character);
+          const sectionIndex = updatedSections.findIndex(
+            sec => sec.title === firstLetter,
+          );
+
+          if (sectionIndex !== -1) {
+            updatedSections[sectionIndex].data.push(character);
           } else {
-            sections.push({title: firstLetter, data: [character]});
+            updatedSections.push({title: firstLetter, data: [character]});
           }
         });
 
-        setCharacterSections(prevSections => [...prevSections, ...sections]);
+        setCharacterSections(updatedSections);
       } catch (error) {
         console.error('Error fetching characters:', error);
       }
@@ -75,6 +79,9 @@ function App(): React.JSX.Element {
               style={styles.thumbnail}
             />
             <Text style={styles.nameText}>{item.name}</Text>
+            <Text style={styles.details} onPress={() => console.log('clicou')}>
+              {' > '}
+            </Text>
           </View>
         )}
         renderSectionHeader={({section: {title}}) => (
@@ -98,7 +105,7 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-between',
     width: '100%',
     borderBottomColor: 'black',
     borderBottomWidth: 1,
@@ -108,6 +115,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     color: '#FFFFFF',
+    flex: 1,
   },
   thumbnail: {
     width: 50,
@@ -119,6 +127,12 @@ const styles = StyleSheet.create({
     padding: 8,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  details: {
+    color: '#b50f16',
+    fontSize: 34,
+    cursor: 'pointer',
+    fontWeight: 700,
   },
 });
 
