@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     color: '#b50f16',
     fontSize: 34,
     cursor: 'pointer',
-    fontWeight: 700,
+    fontWeight: 400,
   },
 });
 

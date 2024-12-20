@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,14 +6,20 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
+import {fetchCharacterComics} from '../service/characters';
+import {Comic} from '../interfaces/Comic';
 
 const CharacterDetailScreen = ({route}: any) => {
   const {character} = route.params;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [comics, setComics] = useState<Comic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); // Estado para erros
 
   const toggleDescription = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded(prev => !prev);
   };
 
   const descriptionText =
@@ -21,7 +27,37 @@ const CharacterDetailScreen = ({route}: any) => {
     'Our writer is busy saving the Semantics World, so this character doesn’t have a description yet!';
   const isLongDescription = descriptionText.length > 100;
 
-  const comics = character.comics.items || [];
+  useEffect(() => {
+    const fetchComics = async () => {
+      try {
+        const characterComics = await fetchCharacterComics(character.id);
+        setComics(characterComics);
+      } catch (error) {
+        setError('Não foi possível carregar os quadrinhos.');
+        console.error('Erro ao buscar quadrinhos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComics();
+  }, [character.id]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -51,20 +87,25 @@ const CharacterDetailScreen = ({route}: any) => {
       <FlatList
         data={comics}
         keyExtractor={item => item.resourceURI}
-        renderItem={({item}) => (
-          <View style={styles.comicItem}>
-            <Image
-              source={require('../../assets/cover.png')}
-              style={styles.comicImage}
-            />
-            <Text style={styles.comicText}>{item.name}</Text>
-          </View>
-        )}
+        renderItem={({item}) => <ComicItem item={item} />}
         contentContainerStyle={styles.comicList}
       />
     </View>
   );
 };
+
+const ComicItem = React.memo(({item}: {item: Comic}) => {
+  const comicImageUri = `${item.thumbnail.path}.${item.thumbnail.extension}`;
+
+  return (
+    <View style={styles.comicItem}>
+      <Image source={{uri: comicImageUri}} style={styles.comicImage} />
+      <Text style={styles.comicText}>
+        {item.title || 'Título não disponível'}
+      </Text>
+    </View>
+  );
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -107,7 +148,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   comicList: {
-    padding: 20,
+    padding: 10,
   },
   titleComics: {
     color: '#FFFFFF',
@@ -121,6 +162,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    width: '100%',
   },
   comicImage: {
     width: 50,
@@ -130,6 +172,20 @@ const styles = StyleSheet.create({
   comicText: {
     color: '#FFFFFF',
     fontSize: 16,
+    flexWrap: 'wrap',
+    flex: 1,
+  },
+  loadingText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  errorText: {
+    color: '#FF0000',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
