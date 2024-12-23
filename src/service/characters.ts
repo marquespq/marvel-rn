@@ -5,7 +5,10 @@ const publicKey = '4d8e35d85d38d01db9dabf885ae6d83e';
 const privateKey = 'b07fb80cd97cb3a58c308035ff9838382087a595';
 const limit = 15;
 
-export const fetchMarvelCharacters = async (offset: number) => {
+export const fetchMarvelCharacters = async (
+  offset: number,
+  searchTerm: string = '',
+) => {
   const timestamp = new Date().getTime();
   const hash = md5(timestamp + privateKey + publicKey);
 
@@ -19,14 +22,17 @@ export const fetchMarvelCharacters = async (offset: number) => {
           hash: hash,
           limit: limit,
           offset: offset,
+          ...(searchTerm && {nameStartsWith: searchTerm}),
         },
       },
     );
 
     return response.data.data.results;
-  } catch (error) {
-    console.error(error);
-    throw error;
+  } catch (error: any) {
+    console.error('Error fetching Marvel characters:', error.message || error);
+    throw new Error(
+      'Failed to fetch Marvel characters. Please try again later.',
+    );
   }
 };
 

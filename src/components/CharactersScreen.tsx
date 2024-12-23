@@ -7,6 +7,8 @@ import {
   Text,
   View,
   SectionList,
+  TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import {fetchMarvelCharacters} from '../service/characters';
 import {Character} from '../interfaces/Character';
@@ -22,12 +24,29 @@ const CharactersScreen = ({}) => {
     CharacterSection[]
   >([]);
   const [offset, setOffset] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>('');
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const navigation = useNavigation<any>();
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   useEffect(() => {
     const loadCharacters = async () => {
       try {
-        const newCharacters = await fetchMarvelCharacters(offset);
+        const newCharacters = await fetchMarvelCharacters(
+          offset,
+          debouncedSearchTerm,
+        );
+
         const filteredCharacters = newCharacters.filter(
           (newCharacter: Character) =>
             !characterSections.some(section =>
@@ -59,8 +78,16 @@ const CharactersScreen = ({}) => {
       }
     };
 
-    loadCharacters();
-  }, [offset]);
+    if (debouncedSearchTerm.length >= 3 || offset > 0) {
+      loadCharacters();
+    }
+  }, [offset, debouncedSearchTerm]);
+
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearchTerm('');
+    setIsSearchActive(false);
+  };
 
   const loadMoreCharacters = () => {
     setOffset(prevOffset => prevOffset + 15);
@@ -69,6 +96,42 @@ const CharactersScreen = ({}) => {
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <StatusBar backgroundColor={'#b50f16'} />
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
+          {!isSearchActive ? (
+            <>
+              <Text style={styles.title}>Characters</Text>
+            </>
+          ) : (
+            <>
+              <TextInput
+                style={styles.searchInput}
+                value={searchTerm}
+                onChangeText={setSearchTerm}
+                placeholder="Name of character"
+                placeholderTextColor="#FFFFFF8A"
+              />
+            </>
+          )}
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            if (!isSearchActive) {
+              setIsSearchActive(true);
+            } else {
+              clearSearch();
+            }
+          }}
+          style={styles.iconButton}>
+          <View style={styles.icSearch}>
+            {!isSearchActive ? (
+              <Image source={require('../../assets/search.png')} />
+            ) : (
+              <Text style={styles.icon}>❌</Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
       <SectionList
         sections={characterSections}
         keyExtractor={item => item.id.toString()}
@@ -102,6 +165,43 @@ const CharactersScreen = ({}) => {
 };
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#B50F16',
+  },
+  titleContainer: {
+    flex: 1,
+    paddingLeft: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icSearch: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    textAlign: 'right',
+  },
+  title: {
+    fontSize: 20,
+    lineHeight: 24,
+    color: '#fff',
+    fontFamily: 'Barlow Condensed',
+    fontWeight: '700',
+  },
+  searchInput: {
+    backgroundColor: 'transparent',
+    flex: 1,
+  },
+  iconButton: {
+    padding: 10,
+  },
+  icon: {
+    fontSize: 20,
+    color: '#FFFFFF',
+    fontWeight: 700,
+  },
   backgroundStyle: {
     backgroundColor: '#303030',
     flex: 1,
@@ -141,7 +241,7 @@ const styles = StyleSheet.create({
     color: '#b50f16',
     fontSize: 34,
     cursor: 'pointer',
-    fontWeight: 400,
+    fontWeight: '400',
   },
 });
 
