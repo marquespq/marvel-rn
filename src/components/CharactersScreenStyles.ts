@@ -29,6 +29,8 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: 'transparent',
     flex: 1,
+    color: '#FFFFFF',
+    fontSize: 20,
   },
   iconButton: {
     padding: 10,

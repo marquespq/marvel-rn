@@ -32,7 +32,7 @@ const CharactersScreen = ({}) => {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 500);
+    }, 1000);
 
     return () => {
       clearTimeout(handler);
