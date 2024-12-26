@@ -6,3 +6,8 @@ export interface Character {
     extension: string;
   };
 }
+
+export interface CharacterSection {
+  title: string;
+  data: Character[];
+}

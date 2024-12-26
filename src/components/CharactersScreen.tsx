@@ -10,14 +10,9 @@ import {
   TextInput,
 } from 'react-native';
 import {fetchMarvelCharacters} from '../service/characters';
-import {Character} from '../interfaces/Character';
+import {CharacterSection} from '../interfaces/Character';
 import {useNavigation} from '@react-navigation/native';
 import styles from './CharactersScreenStyles';
-
-interface CharacterSection {
-  title: string;
-  data: Character[];
-}
 
 const CharactersScreen = ({}) => {
   const [characterSections, setCharacterSections] = useState<
