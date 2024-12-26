@@ -23,9 +23,9 @@ const CharacterDetailScreen = ({route}: any) => {
       try {
         const characterComics = await fetchCharacterComics(character.id);
         setComics(characterComics);
-      } catch (error) {
+      } catch (fetchError) {
         setError('Não foi possível carregar os quadrinhos.');
-        console.error('Erro ao buscar quadrinhos:', error);
+        console.error('Erro ao buscar quadrinhos:', fetchError);
       } finally {
         setLoading(false);
       }
