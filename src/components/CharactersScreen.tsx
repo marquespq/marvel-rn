@@ -150,13 +150,12 @@ const CharactersScreen = ({}) => {
               style={styles.thumbnail}
             />
             <Text style={styles.nameText}>{item.name}</Text>
-            <Text
-              style={styles.details}
+            <TouchableOpacity
               onPress={() =>
                 navigation.navigate('CharacterDetail', {character: item})
               }>
-              {' > '}
-            </Text>
+              <Image source={require('../../assets/go-to-page.png')} />
+            </TouchableOpacity>
           </View>
         )}
         renderSectionHeader={({section: {title}}) => (

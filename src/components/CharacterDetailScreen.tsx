@@ -18,15 +18,6 @@ const CharacterDetailScreen = ({route}: any) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const toggleDescription = () => {
-    setIsExpanded(prev => !prev);
-  };
-
-  const descriptionText =
-    character.description ||
-    'Our writer is busy saving the Semantics World, so this character doesn’t have a description yet!';
-  const isLongDescription = descriptionText.length > 100;
-
   useEffect(() => {
     const fetchComics = async () => {
       try {
@@ -42,6 +33,47 @@ const CharacterDetailScreen = ({route}: any) => {
 
     fetchComics();
   }, [character.id]);
+
+  const toggleDescription = () => {
+    setIsExpanded(prev => !prev);
+  };
+
+  const renderDescription = () => {
+    const descriptionText =
+      character.description || 'Descrição não disponível.';
+    const isLongDescription = descriptionText.length > 100;
+
+    return (
+      <>
+        <Text style={styles.description}>
+          {isExpanded || !isLongDescription
+            ? descriptionText
+            : `${descriptionText.substring(0, 100)}...`}
+        </Text>
+        {isLongDescription && (
+          <TouchableOpacity onPress={toggleDescription} style={styles.button}>
+            <Image
+              source={
+                isExpanded
+                  ? require('../../assets/expand-.png')
+                  : require('../../assets/expand+.png')
+              }
+              style={styles.buttonExpand}
+            />
+          </TouchableOpacity>
+        )}
+      </>
+    );
+  };
+
+  const renderComics = () => (
+    <FlatList
+      data={comics}
+      keyExtractor={item => item.resourceURI}
+      renderItem={({item}) => <ComicItem item={item} />}
+      contentContainerStyle={styles.comicList}
+    />
+  );
 
   if (loading) {
     return (
@@ -71,25 +103,10 @@ const CharacterDetailScreen = ({route}: any) => {
         <Text style={styles.titleName}>{character.name}</Text>
       </View>
 
-      <Text style={styles.description}>
-        {isExpanded || !isLongDescription
-          ? descriptionText
-          : `${descriptionText.substring(0, 100)}...`}
-      </Text>
-      {isLongDescription && (
-        <TouchableOpacity onPress={toggleDescription} style={styles.button}>
-          <Text style={styles.buttonText}>{isExpanded ? '▲' : '▼'}</Text>
-        </TouchableOpacity>
-      )}
+      {renderDescription()}
 
       <Text style={styles.titleComics}>Comics</Text>
-
-      <FlatList
-        data={comics}
-        keyExtractor={item => item.resourceURI}
-        renderItem={({item}) => <ComicItem item={item} />}
-        contentContainerStyle={styles.comicList}
-      />
+      {renderComics()}
     </View>
   );
 };

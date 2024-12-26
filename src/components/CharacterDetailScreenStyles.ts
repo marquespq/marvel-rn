@@ -35,10 +35,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     borderRadius: 5,
   },
-  buttonText: {
-    color: '#B50F16',
-    fontSize: 16,
-    textAlign: 'center',
+  buttonExpand: {
+    marginLeft: '48%',
   },
   comicList: {
     padding: 10,
