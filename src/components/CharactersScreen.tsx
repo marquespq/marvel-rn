@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   Image,
   SafeAreaView,
   StatusBar,
   Text,
   View,
-  SectionList,
   TouchableOpacity,
   TextInput,
+  FlatList,
 } from 'react-native';
 import {fetchMarvelCharacters} from '../service/characters';
 import {CharacterSection} from '../interfaces/Character';
@@ -22,76 +22,88 @@ const CharactersScreen = ({}) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>('');
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigation = useNavigation<any>();
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 1000);
+    }, 500);
 
     return () => {
       clearTimeout(handler);
     };
   }, [searchTerm]);
 
-  useEffect(() => {
-    const loadCharacters = async () => {
-      try {
-        if (debouncedSearchTerm.length >= 3) {
-          setCharacterSections([]);
-          setOffset(0);
-        }
+  const loadCharacters = useCallback(async () => {
+    try {
+      if (debouncedSearchTerm.length >= 3) {
+        setCharacterSections([]);
+        setOffset(0);
+      }
 
-        const newCharacters = await fetchMarvelCharacters(
-          offset,
-          debouncedSearchTerm,
-        );
+      setIsLoading(true);
 
+      const newCharacters = await fetchMarvelCharacters(
+        offset,
+        debouncedSearchTerm.length >= 3 ? debouncedSearchTerm : undefined,
+      );
+
+      const filteredCharacters =
+        debouncedSearchTerm.length >= 3
+          ? newCharacters.filter((char: any) =>
+              char.name
+                .toLowerCase()
+                .includes(debouncedSearchTerm.toLowerCase()),
+            )
+          : newCharacters;
+
+      setCharacterSections(prevSections => {
         const characterMap = new Map();
-
         [
-          ...characterSections.flatMap(section => section.data),
-          ...newCharacters,
+          ...prevSections.flatMap(section => section.data),
+          ...filteredCharacters,
         ].forEach(character => {
           characterMap.set(character.id, character);
         });
 
-        const updatedSections = Array.from(characterMap.values()).reduce<
-          CharacterSection[]
-        >((acc, character) => {
-          const firstLetter = character.name.charAt(0).toUpperCase();
-          const sectionIndex = acc.findIndex(sec => sec.title === firstLetter);
+        return Array.from(characterMap.values())
+          .reduce<CharacterSection[]>((acc, character) => {
+            const firstLetter = character.name.charAt(0).toUpperCase();
+            let section = acc.find(sec => sec.title === firstLetter);
 
-          if (sectionIndex !== -1) {
-            acc[sectionIndex].data.push(character);
-          } else {
-            acc.push({title: firstLetter, data: [character]});
-          }
+            if (!section) {
+              section = {title: firstLetter, data: []};
+              acc.push(section);
+            }
+            section.data.push(character);
+            return acc;
+          }, [])
+          .sort((a, b) => a.title.localeCompare(b.title));
+      });
 
-          return acc;
-        }, []);
-
-        updatedSections.sort((a, b) => a.title.localeCompare(b.title));
-
-        setCharacterSections(updatedSections);
-      } catch (error) {
-        console.error('Error fetching characters:', error);
-      }
-    };
-
-    if (debouncedSearchTerm.length >= 0) {
-      loadCharacters();
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+      setIsLoading(false);
     }
-  }, [offset, debouncedSearchTerm]);
+  }, [debouncedSearchTerm, offset]);
+
+  useEffect(() => {
+    loadCharacters();
+  }, [loadCharacters]);
 
   const clearSearch = () => {
     setSearchTerm('');
     setDebouncedSearchTerm('');
     setIsSearchActive(false);
+    setOffset(0);
   };
 
   const loadMoreCharacters = () => {
-    setOffset(prevOffset => prevOffset + 15);
+    if (!isLoading) {
+      setOffset(prevOffset => prevOffset + 15);
+    }
   };
 
   return (
@@ -133,32 +145,43 @@ const CharactersScreen = ({}) => {
           </View>
         </TouchableOpacity>
       </View>
-      <SectionList
-        sections={characterSections}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({item}) => (
-          <View key={item.id.toString()} style={styles.view}>
-            <Image
-              source={{
-                uri: `${item.thumbnail.path}.${item.thumbnail.extension}`,
-              }}
-              style={styles.thumbnail}
-            />
-            <Text style={styles.nameText}>{item.name}</Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('CharacterDetail', {character: item})
-              }>
-              <Image source={require('../../assets/go-to-page.png')} />
-            </TouchableOpacity>
-          </View>
-        )}
-        renderSectionHeader={({section: {title}}) => (
-          <Text style={styles.sectionHeader}>{title}</Text>
-        )}
+      <FlatList
+        data={characterSections.flatMap(section => [
+          {title: section.title, isHeader: true},
+          ...section.data,
+        ])}
+        keyExtractor={(item: any) =>
+          item.isHeader ? `header-${item.title}` : item?.id?.toString()
+        }
+        renderItem={({item}: any) => {
+          if (item.isHeader) {
+            return <Text style={styles.sectionHeader}>{item.title}</Text>;
+          } else {
+            return (
+              <View key={item.id.toString()} style={styles.view}>
+                <Image
+                  source={{
+                    uri: `${item.thumbnail.path}.${item.thumbnail.extension}`,
+                  }}
+                  style={styles.thumbnail}
+                />
+                <Text style={styles.nameText}>{item.name}</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate('CharacterDetail', {character: item})
+                  }>
+                  <Image source={require('../../assets/go-to-page.png')} />
+                </TouchableOpacity>
+              </View>
+            );
+          }
+        }}
         onEndReached={loadMoreCharacters}
-        onEndReachedThreshold={2}
+        onEndReachedThreshold={0.5}
         contentContainerStyle={styles.scrollView}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={21}
       />
     </SafeAreaView>
   );
