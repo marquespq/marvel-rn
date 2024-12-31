@@ -33,7 +33,7 @@ const CharactersScreen = ({}) => {
     return () => {
       clearTimeout(handler);
     };
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearchTerm]);
 
   const loadCharacters = useCallback(async () => {
     try {
