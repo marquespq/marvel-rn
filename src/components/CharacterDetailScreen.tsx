@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   Button,
   Modal,
+  PermissionsAndroid,
+  Alert,
 } from 'react-native';
 import {fetchCharacterComics} from '../service/characters';
 import {Comic} from '../interfaces/Comic';
 import styles from './CharacterDetailScreenStyles';
 import CameraComponent from './CameraComponent';
+import {Camera} from 'react-native-vision-camera';
 
 const CharacterDetailScreen = ({route}: any) => {
   const {character} = route.params;
@@ -79,8 +82,46 @@ const CharacterDetailScreen = ({route}: any) => {
     />
   );
 
-  const handleOpenCamera = () => {
-    setIsCameraVisible(true);
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Permissão de Câmera',
+          message: 'Este aplicativo precisa acessar sua câmera.',
+          buttonNeutral: 'Pergunte-me depois',
+          buttonNegative: 'Cancelar',
+          buttonPositive: 'OK',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (err) {
+      console.warn(err);
+      return false;
+    }
+  };
+
+  const checkCameraPermission = async () => {
+    const status = await Camera.getCameraPermissionStatus();
+    return status === 'authorized';
+  };
+
+  const handleOpenCamera = async () => {
+    const hasPermission = await checkCameraPermission();
+    if (hasPermission) {
+      setIsCameraVisible(true);
+    } else {
+      const permissionGranted = await requestCameraPermission();
+      if (permissionGranted) {
+        setIsCameraVisible(true);
+      } else {
+        Alert.alert(
+          'Permissão Negada',
+          'Você precisa conceder permissão para usar a câmera.',
+          [{text: 'OK'}],
+        );
+      }
+    }
   };
 
   const handleCloseCamera = () => {
