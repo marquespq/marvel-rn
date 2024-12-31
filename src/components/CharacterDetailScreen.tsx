@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Button,
+  Modal,
 } from 'react-native';
 import {fetchCharacterComics} from '../service/characters';
 import {Comic} from '../interfaces/Comic';
 import styles from './CharacterDetailScreenStyles';
+import CameraComponent from './CameraComponent';
 
 const CharacterDetailScreen = ({route}: any) => {
   const {character} = route.params;
@@ -17,6 +20,7 @@ const CharacterDetailScreen = ({route}: any) => {
   const [comics, setComics] = useState<Comic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCameraVisible, setIsCameraVisible] = useState(false);
 
   useEffect(() => {
     const fetchComics = async () => {
@@ -75,6 +79,14 @@ const CharacterDetailScreen = ({route}: any) => {
     />
   );
 
+  const handleOpenCamera = () => {
+    setIsCameraVisible(true);
+  };
+
+  const handleCloseCamera = () => {
+    setIsCameraVisible(false);
+  };
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -107,6 +119,14 @@ const CharacterDetailScreen = ({route}: any) => {
 
       <Text style={styles.titleComics}>Comics</Text>
       {renderComics()}
+
+      <Button title="Abrir Câmera" onPress={handleOpenCamera} />
+
+      {isCameraVisible && (
+        <Modal visible={isCameraVisible}>
+          <CameraComponent onClose={handleCloseCamera} />
+        </Modal>
+      )}
     </View>
   );
 };
