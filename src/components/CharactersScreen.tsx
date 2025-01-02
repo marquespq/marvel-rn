@@ -205,6 +205,8 @@ const CharactersScreen = ({}) => {
                     uri: `${item.thumbnail.path}.${item.thumbnail.extension}`,
                   }}
                   style={styles.thumbnail}
+                  resizeMethod="resize"
+                  resizeMode="contain"
                 />
                 <Text style={styles.nameText}>{item.name}</Text>
                 <TouchableOpacity
