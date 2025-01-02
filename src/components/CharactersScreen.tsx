@@ -202,7 +202,9 @@ const CharactersScreen = ({}) => {
               <View key={item.id.toString()} style={styles.view}>
                 <Image
                   source={{
-                    uri: `${item.thumbnail.path}.${item.thumbnail.extension}`,
+                    uri: `https${item.thumbnail.path.substring(4)}.${
+                      item.thumbnail.extension
+                    }`,
                   }}
                   style={styles.thumbnail}
                   resizeMethod="resize"

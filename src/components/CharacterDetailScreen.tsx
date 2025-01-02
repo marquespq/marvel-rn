@@ -149,7 +149,9 @@ const CharacterDetailScreen = ({route}: any) => {
       <View style={styles.alignImage}>
         <Image
           source={{
-            uri: `${character.thumbnail.path}.${character.thumbnail.extension}`,
+            uri: `https${character.thumbnail.path.substring(4)}.${
+              character.thumbnail.extension
+            }`,
           }}
           style={styles.thumbnail}
         />
@@ -173,7 +175,9 @@ const CharacterDetailScreen = ({route}: any) => {
 };
 
 const ComicItem = React.memo(({item}: {item: Comic}) => {
-  const comicImageUri = `${item.thumbnail.path}.${item.thumbnail.extension}`;
+  const comicImageUri = `https${item.thumbnail.path.substring(4)}.${
+    item.thumbnail.extension
+  }`;
 
   return (
     <View style={styles.comicItem}>
