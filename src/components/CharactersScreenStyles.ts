@@ -81,6 +81,13 @@ const styles = StyleSheet.create({
     cursor: 'pointer',
     fontWeight: '400',
   },
+  favoriteIcon: {
+    position: 'absolute',
+    top: -40,
+    right: -10,
+    width: 14,
+    height: 14,
+  },
 });
 
 export default styles;

@@ -13,6 +13,7 @@ import {fetchMarvelCharacters} from '../service/characters';
 import {CharacterSection} from '../interfaces/Character';
 import {useNavigation} from '@react-navigation/native';
 import styles from './CharactersScreenStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CharactersScreen = ({}) => {
   const [characterSections, setCharacterSections] = useState<
@@ -24,6 +25,7 @@ const CharactersScreen = ({}) => {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigation = useNavigation<any>();
+  const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -106,6 +108,45 @@ const CharactersScreen = ({}) => {
     }
   };
 
+  const loadFavorites = async () => {
+    try {
+      const storedFavorites = await AsyncStorage.getItem('favorites');
+      if (storedFavorites) {
+        setFavorites(new Set(JSON.parse(storedFavorites)));
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async (characterId: number) => {
+    try {
+      setFavorites(prevFavorites => {
+        const updatedFavorites = new Set(prevFavorites);
+        if (updatedFavorites.has(characterId)) {
+          updatedFavorites.delete(characterId);
+        } else {
+          updatedFavorites.add(characterId);
+        }
+        return new Set(updatedFavorites);
+      });
+
+      const updatedFavorites = [...favorites];
+      if (favorites.has(characterId)) {
+        updatedFavorites.splice(updatedFavorites.indexOf(characterId), 1);
+      } else {
+        updatedFavorites.push(characterId);
+      }
+      await AsyncStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadFavorites();
+  }, []);
+
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <StatusBar backgroundColor={'#b50f16'} />
@@ -171,6 +212,16 @@ const CharactersScreen = ({}) => {
                     navigation.navigate('CharacterDetail', {character: item})
                   }>
                   <Image source={require('../../assets/go-to-page.png')} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                  <Image
+                    source={
+                      favorites.has(item.id)
+                        ? require('../../assets/filledstar.png')
+                        : require('../../assets/emptystar.png')
+                    }
+                    style={styles.favoriteIcon}
+                  />
                 </TouchableOpacity>
               </View>
             );

@@ -62,8 +62,8 @@ const CharacterDetailScreen = ({route}: any) => {
             <Image
               source={
                 isExpanded
-                  ? require('../../assets/expand+.png')
-                  : require('../../assets/expand-.png')
+                  ? require('../../assets/expandMore.png')
+                  : require('../../assets/noExpand.png')
               }
               style={styles.buttonExpand}
             />
