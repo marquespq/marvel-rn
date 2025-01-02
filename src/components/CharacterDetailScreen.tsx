@@ -103,7 +103,7 @@ const CharacterDetailScreen = ({route}: any) => {
 
   const checkCameraPermission = async () => {
     const status = await Camera.getCameraPermissionStatus();
-    return status === 'authorized';
+    return (status as any) === 'authorized';
   };
 
   const handleOpenCamera = async () => {
