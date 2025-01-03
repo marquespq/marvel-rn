@@ -11,10 +11,10 @@ import {
   PermissionsAndroid,
   Alert,
 } from 'react-native';
-import {fetchCharacterComics} from '../service/characters';
-import {Comic} from '../interfaces/Comic';
+import {fetchCharacterComics} from '../../service/characters';
+import {Comic} from '../../interfaces/Comic';
 import styles from './CharacterDetailScreenStyles';
-import CameraComponent from './CameraComponent';
+import CameraComponent from '../Camera/CameraComponent';
 import {Camera} from 'react-native-vision-camera';
 
 const CharacterDetailScreen = ({route}: any) => {
@@ -62,8 +62,8 @@ const CharacterDetailScreen = ({route}: any) => {
             <Image
               source={
                 isExpanded
-                  ? require('../../assets/expandMore.png')
-                  : require('../../assets/noExpand.png')
+                  ? require('../../../assets/expandMore.png')
+                  : require('../../../assets/noExpand.png')
               }
               style={styles.buttonExpand}
             />
