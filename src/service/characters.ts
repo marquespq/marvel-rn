@@ -2,8 +2,8 @@ import axios from 'axios';
 import md5 from 'md5';
 import Config from 'react-native-config';
 
-const publicKey = Config.MARVEL_PUBLIC_KEY;
-const privateKey = Config.MARVEL_PRIVATE_KEY;
+const publicKey = Config.MARVEL_PUBLIC_KEY || '';
+const privateKey = Config.MARVEL_PRIVATE_KEY || '';
 const limit = 15;
 
 export const fetchMarvelCharacters = async (
